@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Таймер для учебы</title>
+    <style>
+      :root {
+        --bg: #f3f7ff;
+        --card: #ffffff;
+        --text: #1f2a37;
+        --accent: #4f46e5;
+        --accent-dark: #3730a3;
+        --muted: #64748b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(135deg, #eef4ff 0%, #dfeafe 100%);
+        font-family: Arial, Helvetica, sans-serif;
+        color: var(--text);
+      }
+
+      .timer-card {
+        width: min(90vw, 560px);
+        background: var(--card);
+        border-radius: 28px;
+        box-shadow: 0 24px 60px rgba(79, 70, 229, 0.18);
+        padding: 32px 28px 28px;
+        text-align: center;
+      }
+
+      h1 {
+        margin: 0 0 20px;
+        font-size: clamp(1.5rem, 2vw, 2rem);
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .time {
+        font-size: clamp(4rem, 13vw, 11rem);
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        margin: 10px 0 28px;
+        color: var(--accent-dark);
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: none;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
+        color: white;
+        font-size: clamp(1.1rem, 2vw, 1.7rem);
+        font-weight: 700;
+        padding: 16px 30px;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+        box-shadow: 0 12px 24px rgba(79, 70, 229, 0.25);
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      button:active {
+        transform: translateY(0);
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .secondary {
+        background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+        box-shadow: 0 12px 24px rgba(100, 116, 139, 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="timer-card">
+      <h1>Таймер для учебы</h1>
+      <div id="time" class="time" aria-live="polite">25:00</div>
+      <div class="controls">
+        <button id="start-btn" type="button">Старт</button>
+        <button id="pause-btn" class="secondary" type="button">Пауза</button>
+        <button id="reset-btn" class="secondary" type="button">Сброс</button>
+      </div>
+    </div>
+
+    <script>
+      const WORK_TIME_SECONDS = 25 * 60;
+      let remainingSeconds = WORK_TIME_SECONDS;
+      let timerId = null;
+      let isRunning = false;
+
+      const timeEl = document.getElementById('time');
+      const startBtn = document.getElementById('start-btn');
+      const pauseBtn = document.getElementById('pause-btn');
+      const resetBtn = document.getElementById('reset-btn');
+
+      function formatTime(totalSeconds) {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
+
+      function updateDisplay() {
+        timeEl.textContent = formatTime(remainingSeconds);
+      }
+
+      function stopTimer() {
+        isRunning = false;
+        clearInterval(timerId);
+        timerId = null;
+      }
+
+      function resetTimer() {
+        stopTimer();
+        remainingSeconds = WORK_TIME_SECONDS;
+        startBtn.disabled = false;
+        startBtn.textContent = 'Старт';
+        updateDisplay();
+      }
+
+      startBtn.addEventListener('click', () => {
+        if (isRunning) return;
+
+        if (remainingSeconds <= 0) {
+          remainingSeconds = WORK_TIME_SECONDS;
+        }
+
+        isRunning = true;
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+
+        timerId = setInterval(() => {
+          if (remainingSeconds <= 0) {
+            stopTimer();
+            timeEl.textContent = '00:00';
+            startBtn.textContent = 'Готово';
+            startBtn.disabled = true;
+            pauseBtn.disabled = true;
+            return;
+          }
+
+          remainingSeconds -= 1;
+          updateDisplay();
+        }, 1000);
+      });
+
+      pauseBtn.addEventListener('click', () => {
+        if (!isRunning) return;
+
+        stopTimer();
+        startBtn.disabled = false;
+        startBtn.textContent = 'Продолжить';
+        pauseBtn.disabled = true;
+      });
+
+      resetBtn.addEventListener('click', () => {
+        resetTimer();
+        pauseBtn.disabled = false;
+      });
+
+      pauseBtn.disabled = true;
+      updateDisplay();
+    </script>
+  </body>
+</html>
